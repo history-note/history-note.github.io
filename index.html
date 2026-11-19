@@ -98,8 +98,14 @@
     appearance:none;border:1px solid var(--line);background:var(--paper);
     border-radius:12px;padding:6px 3px 5px;cursor:pointer;font-family:inherit;
     display:flex;flex-direction:column;align-items:center;gap:1px;
-    color:var(--ink2);transition:all .16s ease;min-width:0;
+    color:var(--ink2);transition:all .16s ease;min-width:0;position:relative;overflow:hidden;
   }
+  .era-chip .ec-wm{
+    position:absolute;right:-5px;bottom:-7px;width:30px;height:30px;line-height:0;
+    color:var(--era);opacity:.13;pointer-events:none;transition:opacity .16s ease;
+  }
+  .era-chip .ec-wm svg{display:block;width:100%;height:100%}
+  .era-chip[aria-pressed="true"] .ec-wm{opacity:.3}
   .era-chip b{font-size:11px;font-weight:800;letter-spacing:-.3px;white-space:nowrap}
   .era-chip i{font-size:10px;color:var(--ink3);font-style:normal;letter-spacing:-.1px}
   .era-chip[aria-pressed="true"]{background:var(--era);border-color:var(--era);box-shadow:0 8px 16px -12px rgba(27,42,74,.9)}
@@ -110,15 +116,24 @@
   .card-wrap{perspective:1300px;height:clamp(336px,42vh,380px)}
   .card{
     position:relative;width:100%;height:100%;cursor:pointer;
-    transform-style:preserve-3d;transition:transform .52s cubic-bezier(.2,.8,.25,1);
+    transform-style:preserve-3d;-webkit-transform-style:preserve-3d;
+    transition:transform .52s cubic-bezier(.2,.8,.25,1);
     will-change:transform;
   }
   .card.flipped{transform:rotateY(180deg)}
   .face{
     position:absolute;inset:0;border-radius:22px;
     backface-visibility:hidden;-webkit-backface-visibility:hidden;
+    transform:translateZ(.4px);-webkit-transform:translateZ(.4px);
     background:var(--paper);border:1px solid var(--line);box-shadow:var(--shadow);
     display:flex;flex-direction:column;padding:16px 18px 14px;overflow:hidden;
+    transition:opacity .22s ease, visibility 0s linear 0s;
+  }
+  /* iOS Safari: 3D 회전 때 반대 면이 비쳐 겹쳐 보이는 문제 — 보이지 않는 면을 실제로 숨긴다 */
+  .card.flipped .face.front,
+  .card:not(.flipped) .face.back{
+    opacity:0;visibility:hidden;pointer-events:none;
+    transition:opacity .2s ease, visibility 0s linear .2s;
   }
   .face::before{
     content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
@@ -128,19 +143,29 @@
     opacity:.95;
   }
   .badge{
-    display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:-.1px;
+    display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:800;letter-spacing:-.1px;
     color:var(--era,#8A6A3B);background:var(--era-soft,#F5EBD8);
     border:1px solid rgba(27,42,74,.07);border-radius:999px;padding:4px 9px;line-height:1.25;
     white-space:nowrap;
   }
+  .badge .bd-ic{display:inline-block;width:13px;height:13px;line-height:0;flex:0 0 13px}
+  .badge .bd-ic svg{display:block;width:100%;height:100%}
   .learned-dot{
     position:absolute;top:16px;right:16px;z-index:2;width:24px;height:24px;border-radius:50%;
     display:none;place-items:center;background:var(--ok-soft);color:var(--ok);
     font-size:13px;font-weight:900;border:1px solid #CBE3D6;
   }
   .card.is-learned .learned-dot{display:grid}
-  .face.front{align-items:center;justify-content:center;gap:14px;text-align:center}
+  .face.front{align-items:center;justify-content:flex-start;gap:10px;text-align:center;padding:48px 18px 30px}
   .front .badge{position:absolute;top:16px;left:18px}
+  .front .qbox{margin-top:auto}
+  .card-art{
+    z-index:1;height:clamp(84px,26vw,110px);max-width:100%;
+    display:flex;align-items:center;justify-content:center;
+    color:var(--era);line-height:0;
+  }
+  .card-art svg{display:block;height:100%;width:auto}
+  @media (max-width:348px){ .card-art{height:76px} }
   .front-name{
     font-family:"Noto Serif KR","Noto Serif CJK KR","Nanum Myeongjo","AppleMyungjo",serif;
     font-size:clamp(27px,8.2vw,35px);font-weight:700;line-height:1.26;letter-spacing:-.9px;
@@ -306,10 +331,12 @@
   }
   .tl{flex:1;overflow-y:auto;padding:0 16px 8px;display:flex;flex-direction:column;gap:2px}
   .tl-era{
-    display:flex;align-items:baseline;gap:7px;padding:12px 2px 6px;position:sticky;top:0;z-index:2;
+    display:flex;align-items:center;gap:7px;padding:12px 2px 6px;position:sticky;top:0;z-index:2;
     background:linear-gradient(180deg,var(--bg) 62%,rgba(246,239,225,.86));
   }
-  .tl-era b{font-size:13px;letter-spacing:-.3px;color:var(--era,#8A6A3B)}
+  .tl-era b{font-size:13px;letter-spacing:-.3px;color:var(--era,#8A6A3B);display:inline-flex;align-items:center;gap:5px}
+  .tl-era .tl-ic{display:inline-block;width:22px;height:22px;line-height:0;flex:0 0 22px}
+  .tl-era .tl-ic svg{display:block;width:100%;height:100%}
   .tl-era span{font-size:10.5px;color:var(--ink3)}
   .tl-item{
     display:grid;grid-template-columns:74px 1fr 10px;gap:8px;align-items:center;width:100%;
@@ -416,7 +443,7 @@
           <div class="face front" id="faceFront">
             <span class="badge" id="fBadge">① 고조선·삼국시대</span>
             <span class="learned-dot">✓</span>
-            <div class="orn" aria-hidden="true"><i></i><span>✦</span><i></i></div>
+            <div class="card-art" id="fArt" aria-hidden="true"></div>
             <h2 class="front-name" id="fName">단군왕검</h2>
             <div class="qbox">
               <em>이렇게 물어봐요</em>
@@ -556,6 +583,687 @@ const CARDS = DATA.cards;
 const ERAS = DATA.eras;
 const ERA_MAP = {};
 ERAS.forEach(e => ERA_MAP[e.id] = e);
+
+/* ================= 일러스트 (인라인 SVG) ================= */
+/* ============================================================
+   한국사 공부 노트 · 인라인 SVG 일러스트 (외부 이미지·CDN 요청 0)
+   - IC[era]   : 40×40 시대 문양 (배지 · 시대 칩 · 연표 머리에 쓰는 작은 그림)
+   - HERO[era] : 128×80 시대 대표 그림 (전용 그림이 없는 카드 앞면)
+   - CARD[id]  : 128×80 인물·사건 전용 그림
+   모두 currentColor(그 시대 색)로 그려서 카드마다 색이 바뀐다.
+   ============================================================ */
+const ART = (function () {
+  const svg = (vb, inner) =>
+    '<svg viewBox="' + vb + '" fill="none" stroke="currentColor" stroke-linecap="round" ' +
+    'stroke-linejoin="round" aria-hidden="true" focusable="false">' + inner + '</svg>';
+
+  // ── 공통 조각 ──────────────────────────────────────────────
+  const W = 'stroke-width="2.3"';      // 기본 굵은 선
+  const w = 'stroke-width="1.5"';      // 가는 선
+  const F = 'fill="currentColor" fill-opacity=".12"';
+  const F2 = 'fill="currentColor" fill-opacity=".26"';
+  const SOL = 'fill="currentColor" fill-opacity=".78" stroke="none"';
+  const P = 'fill="#FFFDF6"';
+  const SEAL = 'fill="var(--seal,#C0492B)" fill-opacity=".82" stroke="none"';
+
+  // 물결
+  const waves = (y, x1, x2, sw) => {
+    const step = 12, n = Math.max(1, Math.round((x2 - x1) / step));
+    let d = 'M' + x1 + ' ' + y;
+    for (let i = 0; i < n; i++) d += ' c3-3.4 6-3.4 9 0 c3 3.4 6 3.4 9 0';
+    return '<path stroke-width="' + (sw || 1.6) + '" d="' + d + '"/>';
+  };
+  // 구름 (봉우리 두 개 + 평평한 밑변)
+  const cloud = (x, y, s) =>
+    '<path stroke-width="1.5" d="M' + x + ' ' + y +
+    'a' + (5 * s) + ' ' + (5 * s) + ' 0 0 1 ' + (5 * s) + '-' + (5.2 * s) +
+    'a' + (6.6 * s) + ' ' + (6.6 * s) + ' 0 0 1 ' + (11 * s) + ' 0' +
+    'a' + (4.6 * s) + ' ' + (4.6 * s) + ' 0 0 1 ' + (3.2 * s) + ' ' + (5.2 * s) + 'z"/>';
+  // 별
+  const star = (x, y, r) =>
+    '<path stroke-width="1.4" d="M' + x + ' ' + (y - r) + 'V' + (y + r) + 'M' + (x - r) + ' ' + y + 'H' + (x + r) + '"/>';
+  // 촛불·횃불 불꽃 (tip 이 위)
+  const flame = (x, y, s) =>
+    '<path fill="currentColor" fill-opacity=".16" stroke-width="2" d="M' + x + ' ' + y +
+    'c' + (3.6 * s) + ' ' + (5.6 * s) + ' ' + (6.4 * s) + ' ' + (9.4 * s) + ' ' + (6.4 * s) + ' ' + (13 * s) +
+    'a' + (6.4 * s) + ' ' + (5.6 * s) + ' 0 0 1-' + (12.8 * s) + ' 0c0-' + (3.6 * s) + ' ' + (2.8 * s) + '-' + (7.4 * s) + ' ' + (6.4 * s) + '-' + (13 * s) + 'z"/>' +
+    '<path stroke-width="1.4" d="M' + x + ' ' + (y + 9 * s) +
+    'c' + (1.6 * s) + ' ' + (2.6 * s) + ' ' + (2.8 * s) + ' ' + (4.4 * s) + ' ' + (2.8 * s) + ' ' + (6.4 * s) +
+    'a' + (2.8 * s) + ' ' + (2.6 * s) + ' 0 0 1-' + (5.6 * s) + ' 0c0-' + (2 * s) + ' ' + (1.2 * s) + '-' + (3.8 * s) + ' ' + (2.8 * s) + '-' + (6.4 * s) + 'z"/>';
+  // 붓 (오른쪽 위로 비스듬히)
+  const brush = (x, y, s) =>
+    '<g transform="translate(' + x + ' ' + y + ') rotate(-45) scale(' + s + ')">' +
+    '<path stroke-width="3.2" d="M0 0h20"/>' +
+    '<path stroke-width="1.6" d="M20-3.4v6.8"/>' +
+    '<path fill="currentColor" fill-opacity=".28" stroke-width="1.6" d="M20-2.6c6 .8 9.6 2.6 9.6 2.6s-3.6 1.8-9.6 2.6z"/>' +
+    '</g>';
+  // 태극 문양
+  const taegeuk = (cx, cy, r) =>
+    '<circle ' + W + ' cx="' + cx + '" cy="' + cy + '" r="' + r + '"/>' +
+    '<path fill="currentColor" fill-opacity=".4" stroke="none" d="M' + cx + ' ' + (cy - r) +
+    'a' + r + ' ' + r + ' 0 0 1 0 ' + 2 * r +
+    ' ' + (r / 2) + ' ' + (r / 2) + ' 0 0 1 0 -' + r +
+    ' ' + (r / 2) + ' ' + (r / 2) + ' 0 0 0 0 -' + r + 'z"/>';
+  // 평화 표시 (원 + 세 갈래)
+  const peace = (cx, cy, r, sw) => {
+    const t = (a) => (a).toFixed(1);
+    const W2 = 'stroke-width="' + (sw || 2.1) + '"';
+    return '<circle ' + W2 + ' cx="' + t(cx) + '" cy="' + t(cy) + '" r="' + t(r) + '"/>' +
+      '<path ' + W2 + ' d="M' + t(cx) + ' ' + t(cy - r) + 'V' + t(cy + r) +
+      'M' + t(cx) + ' ' + t(cy + r * 0.12) + 'L' + t(cx - r * 0.66) + ' ' + t(cy + r * 0.82) +
+      'M' + t(cx) + ' ' + t(cy + r * 0.12) + 'L' + t(cx + r * 0.66) + ' ' + t(cy + r * 0.82) + '"/>';
+  };
+
+  // 청동기 비석에 음각된 글자 (종이색 점) 
+  const steleText = (x0, y0, cols, rows, dx, dy) => {
+    let out = '<g stroke="none" fill="#FFFDF6" fill-opacity=".92">';
+    for (let c = 0; c < cols; c++) for (let r = 0; r < rows; r++)
+      out += '<rect x="' + (x0 + c * dx) + '" y="' + (y0 + r * dy) + '" width="2.6" height="2.1" rx=".6"/>';
+    return out + '</g>';
+  };
+
+  /* ==========================================================
+     ① 금관
+     ========================================================== */
+  const IC1 = `
+    <path ${F} ${W} d="M11.6 22.6h16.8v4.4H11.6z"/>
+    <path ${W} d="M15.6 22.6V13.8M15.6 17.8l-2.6-2.3M15.6 17.8l2.5-2.2"/>
+    <path ${W} d="M20 22.6V10.2M20 16.2l-3.2-2.8M20 16.2l3.2-2.8"/>
+    <path ${W} d="M24.4 22.6V13.8M24.4 17.8l2.6-2.3M24.4 17.8l-2.5-2.2"/>
+    <circle cx="20" cy="9" r="1.25" fill="currentColor" stroke="none"/>
+    <path ${w} d="M13.8 26.9h12.4"/>
+  `;
+
+  /* ② 다보탑 */
+  const IC2 = `
+    <path ${w} d="M8 33.8h24"/>
+    <path ${F} ${W} d="M11 33.8V30.4h18v3.4"/>
+    <path ${W} d="M15 30.4v-4.6h10v4.6"/>
+    <path ${F} ${W} d="M11.6 25.8 20 21.4 28.4 25.8z"/>
+    <path ${W} d="M16.6 21.4v-3.6h6.8v3.6"/>
+    <path ${F} ${W} d="M14.2 17.8 20 14.4 25.8 17.8z"/>
+    <path ${W} d="M18.2 14.4v-2.2h3.6v2.2"/>
+    <path ${W} d="M18.4 12.2 20 10.4 21.6 12.2z"/>
+    <circle cx="20" cy="9.2" r="1.15" fill="currentColor" stroke="none"/>
+  `;
+
+  /* ③ 고려청자 매병 */
+  const IC3 = `
+    <path ${F} d="M17.2 9.6C17.2 12.9 13.3 13.7 12.5 17.5 11.7 21.7 13.5 27.7 17 30.2h6c3.5-2.5 5.3-8.5 4.5-12.7-.8-3.8-4.7-4.6-4.7-7.9z"/>
+    <path ${W} d="M17.2 9.6C17.2 12.9 13.3 13.7 12.5 17.5 11.7 21.7 13.5 27.7 17 30.2h6c3.5-2.5 5.3-8.5 4.5-12.7-.8-3.8-4.7-4.6-4.7-7.9"/>
+    <path ${W} d="M16.2 9.6h7.6"/>
+    <path ${w} d="M17 30.2v2.9h6v-2.9"/>
+    <path ${w} d="M16.6 20.6c.8-2 3-2 3.4 0M19.4 17.6c1.2-1.4 2.6-.6 2.6.8"/>
+    <circle cx="17.2" cy="24.2" r="1" ${F2}/>
+    <circle cx="22.8" cy="24.2" r="1" ${F2}/>
+    <path ${w} d="M20 26.6v1.6"/>
+  `;
+
+  /* ④ 훈민정음 (펼친 책) */
+  const IC4 = `
+    <path ${F} d="M5.8 14.6C10.2 12 15 12.4 20 15c5-2.6 9.8-3 14.2-.4v14c-4.4-2.6-9.2-2.2-14.2.4-5-2.6-9.8-3-14.2-.4z"/>
+    <path ${W} d="M5.8 14.6C10.2 12 15 12.4 20 15c5-2.6 9.8-3 14.2-.4v14c-4.4-2.6-9.2-2.2-14.2.4-5-2.6-9.8-3-14.2-.4z"/>
+    <path ${W} d="M20 15v14"/>
+    <path ${w} d="M9 18.8h6.6M9 21.6h5.2M24.4 18.8H31M24.4 21.6h5.2"/>
+  `;
+
+  /* ⑤ 거북선 */
+  const IC5 = `
+    <path ${F} d="M10.4 26.7C10.4 20.4 14.6 16.4 20 16.4s9.6 4 9.6 10.3z"/>
+    <path ${F} d="M6.8 26.7C8.4 31 13.4 33 20 33s11.6-2 13.2-6.3z"/>
+    <path ${W} d="M6.8 26.7h26.4"/>
+    <path ${W} d="M10.4 26.7C10.4 20.4 14.6 16.4 20 16.4s9.6 4 9.6 10.3"/>
+    <path ${w} d="M15.8 26.3c.2-3.8 1.8-6.4 4.2-7.6M24.2 26.3c-.2-3.8-1.8-6.4-4.2-7.6"/>
+    <path ${w} d="M11.6 22.8c2.6-1.6 14.2-1.6 16.8 0"/>
+    <path ${w} d="M14.2 19.8l-1.2-1.6M20 16.8v-2.2M25.8 19.8l1.2-1.6"/>
+    <path ${W} d="M9.8 25.6C6.6 25 4.8 22.4 5.2 19.8c.2-1.7 1.8-2.4 3-1.4s.8 2.6 2.4 3.4"/>
+    <path ${w} d="M20 16.4V8.6h6.6l-2 1.9 2 1.9H20"/>
+    ${waves(36.4, 5, 35, 1.4)}
+  `;
+
+  /* ⑥ 독립문 */
+  const IC6 = `
+    <path ${w} d="M5.5 34h29"/>
+    <path ${F} ${W} d="M8 34V15.8h5.4V34z"/>
+    <path ${F} ${W} d="M26.6 34V15.8H32V34z"/>
+    <path ${W} d="M13.4 34V24.6a6.6 6.6 0 0 1 13.2 0V34"/>
+    <path ${W} d="M6.4 15.8h27.2M6.4 11.8h27.2M6.4 11.8v4M33.6 11.8v4"/>
+    <path ${w} d="M10.7 19.4v4M29.3 19.4v4"/>
+  `;
+
+  /* ⑦ 무궁화 */
+  const IC7 = `
+    <g ${W}>
+      <path d="M20 20C15.7 20 14.5 13.7 20 9.4c5.5 4.3 4.3 10.6 0 10.6z"/>
+      <path d="M20 20C15.7 20 14.5 13.7 20 9.4c5.5 4.3 4.3 10.6 0 10.6z" transform="rotate(72 20 20)"/>
+      <path d="M20 20C15.7 20 14.5 13.7 20 9.4c5.5 4.3 4.3 10.6 0 10.6z" transform="rotate(144 20 20)"/>
+      <path d="M20 20C15.7 20 14.5 13.7 20 9.4c5.5 4.3 4.3 10.6 0 10.6z" transform="rotate(216 20 20)"/>
+      <path d="M20 20C15.7 20 14.5 13.7 20 9.4c5.5 4.3 4.3 10.6 0 10.6z" transform="rotate(288 20 20)"/>
+    </g>
+    <circle cx="20" cy="20" r="1.9" fill="currentColor" stroke="none"/>
+    <path ${w} d="M20 25v8"/>
+    <path ${F} ${w} d="M20 29.4c-3.4 0-5-1.8-5.2-4 2.8 0 4.8 1.6 5.2 4z"/>
+  `;
+
+  /* ⑧ 태극 */
+  const IC8 = taegeuk(20, 20, 9.6);
+
+  const IC = { 1: IC1, 2: IC2, 3: IC3, 4: IC4, 5: IC5, 6: IC6, 7: IC7, 8: IC8 };
+
+  /* ==========================================================
+     시대 대표 그림 (128×80)
+     ========================================================== */
+  const ground = '<path stroke-width="1.4" d="M8 70h112"/>';
+
+  const HERO = {};
+
+  /* ① 금관 · 비파형 동검 · 해 */
+  HERO[1] = `
+    <circle ${w} cx="22" cy="21" r="8.6"/>
+    <path ${w} d="M22 6.8v2.8M22 32.4v2.8M7.8 21h2.8M33.4 21h2.8M12 11l2 2M30 30l2 2M32 11l-2 2M14 30l-2 2"/>
+    <g transform="translate(26 3) scale(1.7)">${IC1}</g>
+    <path ${w} d="M92 70 104 50l10 14M104 70l10-12 8 10"/>
+    ${ground}
+  `;
+
+  /* ② 다보탑 · 석등 · 구름 */
+  HERO[2] = `
+    <g transform="translate(30 3) scale(1.7)">${IC2}</g>
+    ${cloud(6, 22, 1)}
+    ${cloud(104, 16, .9)}
+    <path ${F} ${W} d="M21 70V66h12v4M24 66v-4h6v4M23 62l5-4 5 4z"/>
+    <path ${w} d="M22 62h12M23.4 58h9.2"/>
+    <path ${F} ${W} d="M95 70V66h12v4M98 66v-4h6v4M97 62l5-4 5 4z"/>
+    <path ${w} d="M96 62h12M97.4 58h9.2"/>
+    ${ground}
+  `;
+
+  /* ③ 청자 매병 · 경판 */
+  HERO[3] = `
+    <g transform="translate(22 -8) scale(2)">${IC3}</g>
+    <path ${F2} ${w} d="M88 40h28v13H88zM84 54h32v13H84z"/>
+    <path ${w} d="M92 46h20M88 50h20M88 60h24M84 64h26"/>
+    ${cloud(8, 26, .9)}
+    ${ground}
+  `;
+
+  /* ④ 훈민정음 · 측우기 · 먹 */
+  HERO[4] = `
+    <g transform="translate(26 4) scale(1.75)">${IC4}</g>
+    <path ${F} ${W} d="M100 44h14v18a7 7 0 0 1-14 0z"/>
+    <path ${w} d="M100 50h14M100 56h14"/>
+    <path ${W} d="M94 70h26"/>
+    <path ${F} ${w} d="M16 70V62h12v8z"/>
+    <path ${w} d="M22 62c-3-2-3-5 0-6 3 1 3 4 0 6z"/>
+    <path ${w} d="M107 36v-8"/>
+    ${ground}
+  `;
+
+  /* ⑤ 거북선 · 성곽 · 파도 */
+  HERO[5] = `
+    ${waves(66, 8, 120, 1.5)}
+    ${waves(73, 8, 120, 1.5)}
+    <path ${F} ${W} d="M18 50h86v6c0 7-12 11-28 11H46c-16 0-28-4-28-11z"/>
+    <path ${W} d="M16 50h90"/>
+    <path ${F} ${W} d="M30 50c0-12 11-20 30-20s30 8 30 20"/>
+    <path ${w} d="M44 49c0-8 6-13 16-16M76 49c0-8-6-13-16-16"/>
+    <path ${w} d="M60 30v-9"/>
+    <path ${P} ${w} d="M60 22h12l-3.6 3.5 3.6 3.5H60z"/>
+    <path ${w} d="M30 40l-3-5M90 40l3-5"/>
+    <path ${F2} d="M19 49c-7-1-12-5-13-10-1-4 2-7 5-6 3 1 2 4 5 5 3 1 5 3 5 6 0 3-1 4-2 5z"/>
+    <circle cx="13" cy="40" r="1.4" ${P} stroke-width="1"/>
+    <path ${w} d="M30 60l-8 8M42 62l-6 8M90 60l8 8M78 62l6 8"/>
+    ${cloud(6, 20, .85)}
+    ${cloud(100, 16, .7)}
+  `;
+
+  /* ⑥ 독립문 · 태극기 */
+  HERO[6] = `
+    <g transform="translate(24 6) scale(1.55)">${IC6}</g>
+    <path ${W} d="M106 72V22"/>
+    <path ${P} ${W} d="M106 24c5 3 10-3 15 0v14c-5-3-10 3-15 0z"/>
+    <circle ${w} cx="113.5" cy="31" r="4.4"/>
+    <path stroke="none" fill="currentColor" fill-opacity=".3" d="M113.5 26.6a4.4 4.4 0 0 1 0 8.8 2.2 2.2 0 0 1 0-4.4 2.2 2.2 0 0 0 0-4.4z"/>
+    ${ground}
+  `;
+
+  /* ⑦ 무궁화 · 횃불 */
+  HERO[7] = `
+    <g transform="translate(24 2) scale(1.8)">${IC7}</g>
+    <path ${W} d="M104 70V43"/>
+    ${flame(104, 23, 1)}
+    <path ${w} d="M96 70h16"/>
+    ${ground}
+  `;
+
+  /* ⑧ 태극 · 비둘기 · 성장 */
+  HERO[8] = `
+    <g transform="translate(18 -6) scale(2.05)">${IC8}</g>
+    ${peace(104, 40, 13.5)}
+    <path ${w} d="M10 70V58h4.5v12M18 70V62h4.5v8M26 70V52h4.5v18"/>
+    <path ${w} d="M33 56l-3.4-5 6 .8z"/>
+    ${ground}
+  `;
+
+  /* ==========================================================
+     인물·사건 전용 그림 (128×80)
+     ========================================================== */
+  const CARD = {};
+
+  /* ① 단군왕검 — 해 · 신단수 · 곰 */
+  CARD['e1-01'] = `
+    <circle ${w} cx="20" cy="22" r="9"/>
+    <path ${w} d="M20 7.4v2.8M20 33.8v2.8M5.4 22h2.8M31.8 22h2.8M9.6 11.6l2 2M28.4 30.4l2 2M30.4 11.6l-2 2M11.6 30.4l-2 2"/>
+    <path ${W} d="M56 70V44M56 56l-9-9M56 52l9-9"/>
+    <path ${F} ${W} d="M38 44a11 11 0 0 1 5-17 13 13 0 0 1 24-2 11 11 0 0 1 7 19z"/>
+    <path ${w} d="M50 26c2-4 8-5 11-2M60 34c3-2 5-5 5-8"/>
+    <path ${w} d="M40 70h32"/>
+    <path ${F2} d="M100 43c-8 0-13 6-13 14 0 7 6 12 13 12s13-5 13-12c0-8-5-14-13-14z"/>
+    <circle ${F2} cx="100" cy="37" r="8"/>
+    <circle ${F2} cx="93" cy="30" r="3.2"/>
+    <circle ${F2} cx="107" cy="30" r="3.2"/>
+    <path ${w} d="M96.6 35.4h.1M103.4 35.4h.1"/>
+    <path ${w} d="M100 40.6v1.6"/>
+    ${ground}
+  `;
+
+  /* ① 을지문덕 — 살수대첩의 활 */
+  CARD['e1-10'] = `
+    <path ${W} stroke-width="2.6" d="M54 8C32 26 32 54 54 72"/>
+    <path ${w} d="M54 8V72"/>
+    <path ${W} d="M40 40h56"/>
+    <path ${W} d="M89 33l7 7-7 7"/>
+    <path ${w} d="M42 40l-7-4M42 40l-7 4"/>
+    ${cloud(10, 20, .85)}
+    ${cloud(96, 12, .8)}
+    ${waves(66, 8, 120, 1.7)}
+    ${waves(74, 8, 120, 1.7)}
+  `;
+
+  /* ② 원효 — 불상과 연꽃 */
+  CARD['e2-03'] = `
+    <circle ${w} cx="60" cy="32" r="21"/>
+    <path ${F} ${W} d="M60 22a7 7 0 0 1 0 14 7 7 0 0 1 0-14z"/>
+    <path ${w} d="M60 19.6v2.4"/>
+    <path ${F} ${W} d="M60 37c-8 0-13 5-15 12l-3 10c7 3 29 3 36 0l-3-10c-2-7-7-12-15-12z"/>
+    <path ${w} d="M50 50c6 3 14 3 20 0M60 40v14"/>
+    <path ${W} d="M36 62h48"/>
+    <path ${F} ${w} d="M36 62a8 9 0 0 0 16 0M52 62a8 9 0 0 0 16 0M68 62a8 9 0 0 0 16 0"/>
+    <path ${w} d="M44 71a8 9 0 0 0 16 0M60 71a8 9 0 0 0 16 0"/>
+    <path ${F} ${w} d="M98 62c-5-2-7-7-6-11 4 1 7 5 6 11z"/>
+    <path ${w} d="M92 70h12"/>
+  `;
+
+  /* ② 장보고 — 청해진의 배와 봉수대 */
+  CARD['e2-07'] = `
+    <path ${F} ${W} d="M18 50c3 8 15 13 27 13s24-5 27-13z"/>
+    <path ${W} d="M18 50h54"/>
+    <path ${W} d="M45 50V18"/>
+    <path ${F} ${W} d="M45 22c11 4 16 12 16 24H45z"/>
+    <path ${w} d="M45 18h9l-2 3 2 3h-9"/>
+    <path ${w} d="M31 52c4 3 9 4 14 4"/>
+    <path ${F} ${W} d="M94 70l2-14h11l2 14z"/>
+    ${flame(101.5, 42, .72)}
+    <path ${w} d="M101 34c3-3 0-6 2-9"/>
+    ${waves(72, 8, 120, 1.6)}
+  `;
+
+  /* ② 대조영 — 발해의 성 */
+  CARD['e2-10'] = `
+    <path ${w} d="M4 70l16-21 13 17M26 70l15-24 19 24"/>
+    <path ${F} ${W} d="M36 70V54h84v16z"/>
+    <path ${W} d="M40 54v-4h5v4M51 54v-4h5v4M62 54v-4h5v4M73 54v-4h5v4M84 54v-4h5v4M95 54v-4h5v4M106 54v-4h5v4"/>
+    <path ${P} ${W} d="M64 70V59a8 8 0 0 1 16 0v11"/>
+    <path ${w} d="M40 62h80"/>
+    <path ${F} ${W} d="M44 54V36h12v18z"/>
+    <path ${W} d="M50 36V24"/>
+    <path ${P} ${W} d="M50 26h12l-4 4 4 4H50z"/>
+    ${ground}
+  `;
+
+  /* ③ 왕건 — 고려의 궁궐 */
+  CARD['e3-01'] = `
+    <path ${F} d="M50 26 22 40c22-5 62-5 84 0L78 26z"/>
+    <path ${W} d="M50 26h28"/>
+    <path ${W} d="M50 26 22 40M78 26l28 14"/>
+    <path ${W} d="M22 40c22-5 62-5 84 0"/>
+    <path ${w} d="M20 44c22-5 66-5 88 0"/>
+    <path ${w} d="M22 40l-4-7M106 40l4-7"/>
+    <path ${W} d="M36 43v23M50 41v25M64 41v25M78 41v25M92 43v23"/>
+    <path ${w} d="M30 56h12M58 56h12M86 56h12"/>
+    <path ${W} d="M26 66h76"/>
+    <path ${w} d="M30 71h68"/>
+    ${cloud(6, 20, .8)}
+  `;
+
+  /* ③ 강감찬 — 귀주대첩의 북 */
+  CARD['e3-05'] = `
+    <path ${W} d="M106 70V26"/>
+    <path ${P} ${W} d="M106 28h15l-4 4 4 4h-15z"/>
+    <circle ${F} ${W} cx="58" cy="48" r="21"/>
+    <circle ${w} cx="58" cy="48" r="15.4"/>
+    <g ${F2}>${'<circle cx="58" cy="23.4" r="1.6"/><circle cx="70.8" cy="30.2" r="1.6"/><circle cx="70.8" cy="65.8" r="1.6"/><circle cx="58" cy="72.6" r="1.6"/><circle cx="45.2" cy="65.8" r="1.6"/><circle cx="45.2" cy="30.2" r="1.6"/>'}</g>
+    <path ${W} stroke-width="2.6" d="M32 14l16 12M84 14 68 26"/>
+    <circle cx="32" cy="13" r="3.4" ${F2}/>
+    <circle cx="84" cy="13" r="3.4" ${F2}/>
+    <path ${w} d="M18 70h30M86 70h30"/>
+    ${cloud(8, 22, .8)}
+  `;
+
+  /* ③ 팔만대장경 — 경판 */
+  CARD['e3-09'] = `
+    <path ${F2} ${W} d="M26 24h76v10H26z"/>
+    <path ${F2} ${W} d="M22 34h84v10H22z"/>
+    <path ${F2} ${W} d="M26 44h76v10H26z"/>
+    <path ${F2} ${W} d="M22 54h84v10H22z"/>
+    <g ${w}>
+      <path d="M34 27h2M40 27h2M46 27h2M52 27h2M58 27h2M64 27h2M70 27h2M76 27h2M82 27h2M88 27h2M94 27h2"/>
+      <path d="M28 47h2M34 47h2M40 47h2M46 47h2M52 47h2M58 47h2M64 47h2M70 47h2M76 47h2M82 47h2M88 47h2M94 47h2"/>
+      <path d="M30 57h2M36 57h2M42 57h2M48 57h2M54 57h2M60 57h2M66 57h2M72 57h2M78 57h2M84 57h2M90 57h2M96 57h2"/>
+    </g>
+    <path ${w} d="M14 68h100"/>
+  `;
+
+  /* ④ 정도전 — 궁궐 도면 */
+  CARD['e4-02'] = `
+    <path ${P} ${W} d="M24 10h78v58H24z"/>
+    <path ${w} stroke-dasharray="2 4" d="M39 10v58M54 10v58M69 10v58M84 10v58"/>
+    <path ${W} d="M46 54V42h34v12"/>
+    <path ${W} d="M42 42 63 30l21 12"/>
+    <path ${w} d="M38 54h48M36 59h52M40 64h44"/>
+    <path ${w} d="M18 70h92"/>
+    <circle ${w} cx="94" cy="20" r="5.6"/>
+    <path ${w} d="M94 13.6v12.8M87.6 20h12.8"/>
+    <path ${w} d="M50 18h18"/>
+  `;
+
+  /* ④ 세종대왕 — 한글과 훈민정음 */
+  CARD['e4-04'] = `
+    <path ${W} d="M32 12h11M29 18h17"/>
+    <circle ${W} cx="37.5" cy="29" r="5.6"/>
+    <path ${W} d="M60 12v24M60 22h8"/>
+    <path ${W} d="M84 12h16v24"/>
+    <path ${F} ${W} d="M34 52c10-4 20-4 30 0 10-4 20-4 30 0v18c-10-4-20-4-30 0-10-4-20-4-30 0z"/>
+    <path ${w} d="M64 52v18M42 58h14M42 63h10M72 58h14M72 63h10"/>
+    ${brush(96, 68, .8)}
+    <path ${w} d="M12 74h104"/>
+  `;
+
+  /* ④ 장영실 — 앙부일구와 측우기 */
+  CARD['e4-05'] = `
+    <path ${F} ${W} d="M20 42a24 16 0 0 0 48 0z"/>
+    <path ${W} d="M20 42a24 5.2 0 0 0 48 0"/>
+    <path ${W} d="M44 42 39 28"/><circle cx="38.4" cy="27.2" r="1.8"/>
+    <path ${w} d="M44 43h13M44 43l-9 6M44 43l9 6M31 44l-2 4M57 44l2 4"/>
+    <path ${W} d="M30 54v10M58 54v10M44 56v8"/>
+    <path ${W} d="M20 70h48"/>
+    <path ${F} ${W} d="M92 40h12v18a6 6 0 0 1-12 0z"/>
+    <path ${w} d="M92 46h12M92 52h12"/>
+    <path ${F} ${w} d="M84 70V64h28v6z"/>
+    <path ${w} d="M98 34v-6M106 32v-7"/>
+  `;
+
+  /* ④ 신사임당 — 포도 그림과 붓 */
+  CARD['e4-11'] = `
+    <path ${P} ${W} d="M26 14h58v50H26z"/>
+    <path ${w} d="M44 8h22M55 8v6"/>
+    <path ${w} d="M55 20c-2 9 2 14 1 20"/>
+    <path ${F} ${w} d="M57 21c6-4 12-1 12 6-6 3-11 0-12-6z"/>
+    <path ${F} ${w} d="M52 26c-6-4-12-1-12 6 6 3 11 0 12-6z"/>
+    <g ${F2}>
+      <circle cx="53" cy="47" r="3.4"/><circle cx="59.5" cy="47" r="3.4"/><circle cx="47" cy="52" r="3.4"/>
+      <circle cx="56.5" cy="52.5" r="3.4"/><circle cx="66" cy="52" r="3.4"/><circle cx="53" cy="58" r="3.4"/>
+      <circle cx="60.5" cy="57.5" r="3.4"/>
+    </g>
+    ${brush(92, 62, .9)}
+    <path ${w} d="M16 72h26M92 72h24"/>
+  `;
+
+  /* ⑤ 이순신 — 거북선 */
+  CARD['e5-01'] = `
+    ${waves(64, 6, 122, 1.6)}
+    ${waves(72, 6, 122, 1.6)}
+    <path ${F} ${W} d="M22 56C26 66 44 70 64 70s38-4 42-14z"/>
+    <path ${W} d="M18 56h92"/>
+    <path ${F} ${W} d="M28 56C28 40 44 30 64 30s36 10 36 26"/>
+    <path ${w} d="M41 55c0-8 4-14 10-17M64 30v25M87 55c0-8-4-14-10-17"/>
+    <path ${w} d="M32 47c8-5 56-5 64 0M36 39c8-4 48-4 56 0"/>
+    <path ${w} d="M34 37l-3-5M48 32l-1-6M64 30v-6M80 32l1-6M94 37l3-5"/>
+    <path ${F2} d="M30 55c-6 0-11-4-13-9-1-4 1-8 4-8 3 0 4 2 4 5 0 2 2 3 4 3 2 0 3 2 3 4 0 3-1 4-2 5z"/>
+    <circle cx="24" cy="44" r="1.4" ${P} stroke-width="1"/>
+    <path ${w} d="M64 30V14"/>
+    <path ${P} ${W} d="M64 16h16l-5 5 5 5H64z"/>
+    <path ${w} d="M30 60h8M58 62h10M86 60h8"/>
+  `;
+
+  /* ⑤ 허준 — 동의보감과 약 */
+  CARD['e5-05'] = `
+    <path ${F} ${W} d="M22 32h30v38H22z"/>
+    <path ${w} d="M28 32v38M50 36h5v30h-5M50 42h5M50 48h5M50 54h5"/>
+    <path ${W} d="M22 32h30M22 70h30"/>
+    <path ${w} d="M36 32v9l3.5-2.6L43 41v-9"/>
+    <path ${F} ${W} d="M74 54h22a11 11 0 0 1-22 0z"/>
+    <path ${W} d="M70 66h30"/>
+    <path ${w} d="M85 46c3-3 0-6 3-9"/>
+    <path ${F} ${W} d="M108 40c3.4 0 5.4 5 5.4 10 0 6-2 9-2 14 0 3-1 5-3.4 5s-3.4-2-3.4-5c0-5-2-8-2-14 0-5 2-10 5.4-10z"/>
+    <path ${w} d="M106 54l-5 8M111 55l5 7M112 46l4-4M113 50l6 0"/>
+    <path ${w} d="M104 70h18"/>
+    <path ${w} d="M40 22h8M44 18v8"/>
+  `;
+
+  /* ⑤ 정조 — 수원화성 화서문 */
+  CARD['e5-08'] = `
+    <path ${F} ${W} d="M6 70V52h116v18z"/>
+    <path ${W} d="M10 52v-5h5v5M21 52v-5h5v5M32 52v-5h5v5M43 52v-5h5v5M54 52v-5h5v5M69 52v-5h5v5M80 52v-5h5v5M91 52v-5h5v5M102 52v-5h5v5M113 52v-5h5v5"/>
+    <path ${w} d="M6 60h116M6 66h116"/>
+    <path ${P} ${W} d="M50 70V46a14 14 0 0 1 28 0v24"/>
+    <path ${F} ${W} d="M40 44c6-9 16-13 24-13s18 4 24 13c-8-4-40-4-48 0z"/>
+    <path ${w} d="M42 42l-3-5M86 42l3-5M64 31v-5M70 31v-5"/>
+    <path ${w} d="M4 70h120"/>
+  `;
+
+  /* ⑤ 김정호 — 대동여지도 */
+  CARD['e5-11'] = `
+    <path ${P} ${W} d="M18 14h92v50H18z"/>
+    <path ${w} d="M41 14v50M64 14v50M87 14v50"/>
+    <path ${w} d="M24 40l7-9 7 9M44 38l8-11 8 11M70 40l7-9 7 9M92 38l7-10 7 10"/>
+    <path ${w} d="M20 52c8-4 14 4 22 0s14 4 22 0 14 4 22 0 14 4 22 0"/>
+    <circle ${w} cx="98" cy="56" r="6"/>
+    <path ${w} d="M98 48.4v3.6M98 60v3.6M90.4 56h3.6M102 56h3.6"/>
+    <path ${w} d="M22 62h24M22 66h16"/>
+    <path ${w} d="M12 72h104"/>
+  `;
+
+  /* ⑤ 김홍도 — 그림 그리는 화가 */
+  CARD['e5-13'] = `
+    <path ${P} ${W} d="M22 12h68v50H22z"/>
+    <path ${w} d="M42 6h28M56 6v6"/>
+    <path ${w} d="M28 50l13-16 13 16zM50 50l10-12 10 12"/>
+    <path ${F} ${w} d="M74 50V38h16v12zM71 38l11-7 11 7z"/>
+    <path ${w} d="M30 56h48M24 62h44"/>
+    ${brush(90, 64, 1)}
+    <path ${w} d="M16 72h26M92 72h24"/>
+  `;
+
+  /* ⑥ 강화도 조약 — 배와 조약문 */
+  CARD['e6-02'] = `
+    <path ${F} ${W} d="M10 46c2 7 11 11 21 11s19-4 21-11z"/>
+    <path ${W} d="M10 46h42"/>
+    <path ${W} d="M31 46V22"/>
+    <path ${F} ${W} d="M31 26c9 3 13 10 13 20H31z"/>
+    <path ${w} d="M31 22h8l-2 2 2 2h-8"/>
+    ${waves(64, 6, 58, 1.5)}
+    <path ${P} ${W} d="M66 16h46v46H66z"/>
+    <path ${w} d="M96 16l16 16h-16z"/>
+    <path ${w} d="M72 30h18M72 36h18M72 42h14M72 48h18M72 54h10"/>
+    <circle cx="102" cy="53" r="5" ${SEAL}/>
+    <path ${w} d="M14 70h104"/>
+  `;
+
+  /* ⑥ 동학농민운동 — 깃발과 죽창 */
+  CARD['e6-04'] = `
+    <path ${W} d="M84 68 106 26M104 68 82 26"/>
+    <path ${w} d="M92 52l3-2M98 40l3-2M98 54l-3-2M92 42l-3-2"/>
+    <path ${W} d="M40 70V14"/>
+    <path ${P} ${W} d="M40 18c8 5 16-5 24 0 6 4 12 3 16 1v18c-4 2-10 3-16-1-8-5-16 5-24 0z"/>
+    <path ${w} d="M56 26c4 3 8 3 12 0M54 32h20"/>
+    <path ${w} d="M18 70h34M72 70h24"/>
+    ${cloud(8, 26, .8)}
+  `;
+
+  /* ⑥ 대한제국 — 태극기 */
+  CARD['e6-09'] = `
+    <path ${W} d="M22 72V10"/>
+    <circle cx="22" cy="8" r="2.6" fill="currentColor" stroke="none"/>
+    <path ${P} ${W} d="M24 14c16 6 32-6 48 0v26c-16 6-32-6-48 0z"/>
+    <circle ${W} cx="48" cy="27" r="8"/>
+    <path fill="currentColor" fill-opacity=".3" stroke="none" d="M48 19a8 8 0 0 1 0 16 4 4 0 0 1 0-8 4 4 0 0 0 0-8z"/>
+    <g ${w}>
+      <path d="M28 18h7M28 22h7M28 26h7"/>
+      <path d="M62 27h3M67 27h3M62 31h3M67 31h3M62 35h3M67 35h3"/>
+      <path d="M28 32h3M33 32h3M28 36h3M33 36h3M28 40h3M33 40h3"/>
+    </g>
+    <path ${w} d="M14 72h100"/>
+    <path ${w} d="M88 72c4-4 8-4 11 0"/>
+  `;
+
+  /* ⑥ 안중근 — 유묵과 붓 */
+  CARD['e6-12'] = `
+    <path ${W} d="M32 12h64M32 68h64"/>
+    <path ${P} ${W} d="M36 12h56v56H36z"/>
+    <g ${W}>
+      <path d="M46 22h12M46 30h12M46 38h12M46 46h12M46 54h8"/>
+      <path d="M64 22h12M64 30h12M64 38h12M64 46h12M64 54h12"/>
+    </g>
+    <rect x="40" y="56" width="8" height="8" ${SEAL}/>
+    ${brush(84, 66, .8)}
+    <path ${w} d="M16 74h96"/>
+  `;
+
+  /* ⑦ 3·1운동 — 만세의 깃발 */
+  CARD['e7-01'] = `
+    <path ${w} d="M64 4v12M51 6l4 9M77 6l-4 9M40 10l6 7M88 10l-6 7"/>
+    <path ${W} d="M26 70V30"/>
+    <path ${P} ${W} d="M26 32c6 4 12-4 18 0v14c-6-4-12 4-18 0z"/>
+    <circle ${w} cx="35" cy="39" r="4.2"/>
+    <path ${W} d="M56 70V22"/>
+    <path ${P} ${W} d="M56 24c8 5 16-5 24 0v18c-8-5-16 5-24 0z"/>
+    <circle ${w} cx="68" cy="33" r="5.4"/>
+    <path fill="currentColor" fill-opacity=".3" stroke="none" d="M68 27.6a5.4 5.4 0 0 1 0 10.8 2.7 2.7 0 0 1 0-5.4 2.7 2.7 0 0 0 0-5.4z"/>
+    <path ${W} d="M92 70V38"/>
+    <path ${P} ${W} d="M92 40c5 3 10-3 15 0v12c-5-3-10 3-15 0z"/>
+    <path ${w} d="M16 70h24M48 70h22M86 70h20"/>
+    <path ${w} d="M100 62c4-4 8-4 11 0"/>
+  `;
+
+  /* ⑦ 유관순 — 횃불과 무궁화 */
+  CARD['e7-02'] = `
+    <path ${W} stroke-width="3" d="M52 40v30"/>
+    <path ${w} d="M47 56h10"/>
+    ${flame(52, 20, 1.2)}
+    <g transform="translate(80 6) scale(1.05)">${IC7}</g>
+    <path ${W} d="M22 70V46"/>
+    <path ${P} ${W} d="M22 48c5 3 10-3 15 0v11c-5-3-10 3-15 0z"/>
+    <circle ${w} cx="31" cy="55" r="4"/>
+    <path ${w} d="M14 70h22M78 70h32"/>
+  `;
+
+  /* ⑦ 대한민국 임시정부 — 임시헌장과 인장 */
+  CARD['e7-03'] = `
+    <path ${W} d="M22 70V22"/>
+    <path ${P} ${W} d="M22 24c7 4 14-4 21 0v16c-7-4-14 4-21 0z"/>
+    <circle ${w} cx="32.5" cy="32" r="4.4"/>
+    <path fill="currentColor" fill-opacity=".3" stroke="none" d="M32.5 27.6a4.4 4.4 0 0 1 0 8.8 2.2 2.2 0 0 1 0-4.4 2.2 2.2 0 0 0 0-4.4z"/>
+    <path ${P} ${W} d="M52 18h54v48H52z"/>
+    <path ${w} d="M60 26h38M60 32h38M60 38h30M60 44h38M60 50h24"/>
+    <circle cx="92" cy="55" r="6.4" ${SEAL}/>
+    <path ${w} d="M12 70h104"/>
+  `;
+
+  /* ⑦ 윤동주 — 별과 시집 */
+  CARD['e7-13'] = `
+    <circle cx="104" cy="18" r="8.6" fill="currentColor" fill-opacity=".2" stroke="none"/>
+    <circle cx="108" cy="14.6" r="7.4" ${P} stroke="none"/>
+    ${star(22, 14, 3.6)}
+    ${star(44, 24, 2.6)}
+    ${star(70, 10, 3)}
+    ${star(88, 30, 2.6)}
+    ${star(30, 40, 2.4)}
+    ${star(118, 42, 3)}
+    <path ${F} ${W} d="M18 52c8-4 16 1 24 4 8-3 16-8 24-4v16c-8-4-16 1-24 4-8-3-16-8-24-4z"/>
+    <path ${w} d="M42 56v16M26 58h12M26 62h10M48 58h10M48 62h12"/>
+    ${brush(72, 68, .65)}
+    <path ${w} d="M70 72h30"/>
+  `;
+
+  /* ⑧ 8·15 광복 — 태극기와 비둘기 */
+  CARD['e8-01'] = `
+    <path ${w} d="M64 4v11M51 7l4 8M77 7l-4 8M42 12l5 6M86 12l-5 6"/>
+    <path ${W} d="M30 72V28"/>
+    <path ${P} ${W} d="M30 30c8 5 16-5 24 0 6 4 12 3 16 1v20c-4 2-10 3-16-1-8-5-16 5-24 0z"/>
+    <circle ${w} cx="50" cy="44" r="7.2"/>
+    <path fill="currentColor" fill-opacity=".3" stroke="none" d="M50 36.8a7.2 7.2 0 0 1 0 14.4 3.6 3.6 0 0 1 0-7.2 3.6 3.6 0 0 0 0-7.2z"/>
+    ${peace(100, 44, 14)}
+    <path ${w} d="M20 72h92"/>
+  `;
+
+  /* ⑧ 새마을운동 — 새로 지은 마을 */
+  CARD['e8-08'] = `
+    <circle ${w} cx="102" cy="18" r="8"/>
+    <path ${w} d="M102 6v-3M102 33v-3M90 18h-3M117 18h-3M94 10l-2-2M110 26l2 2M110 10l2-2M94 26l-2 2"/>
+    <path ${F} ${W} d="M16 62V46h30v16z"/>
+    <path ${F} ${W} d="M12 46c2-8 8-13 19-13s17 5 19 13c-4-4-8-5-19-5s-15 1-19 5z"/>
+    <path ${w} d="M27 52h8v6h-8z"/>
+    <path ${F} ${W} d="M54 64V48h30v16z"/>
+    <path ${F} ${W} d="M50 48c2-8 8-13 19-13s17 5 19 13c-4-4-8-5-19-5s-15 1-19 5z"/>
+    <path ${w} d="M65 54h8v6h-8z"/>
+    <path ${w} d="M8 70c10-4 20 0 30-2s20 2 30 0 20-2 30 0 18 2 24 0"/>
+    <path ${w} d="M92 52v18M92 60l-5-4M92 64l5-4"/>
+  `;
+
+  /* ⑧ 88 서울올림픽 — 오륜과 성화 */
+  CARD['e8-12'] = `
+    <g ${W}>
+      <circle cx="30" cy="34" r="9"/>
+      <circle cx="49" cy="34" r="9"/>
+      <circle cx="68" cy="34" r="9"/>
+      <circle cx="39.5" cy="49" r="9"/>
+      <circle cx="58.5" cy="49" r="9"/>
+    </g>
+    <path ${W} d="M98 68V45"/>
+    ${flame(98, 25, 1)}
+    <path ${w} d="M88 68h20"/>
+    <path ${w} d="M20 70h92"/>
+    ${star(84, 24, 2.6)}
+  `;
+
+  /* ⑧ IMF 외환위기 — 내려가는 그래프와 동전 */
+  CARD['e8-13'] = `
+    <path ${P} ${W} d="M20 14h62v44H20z"/>
+    <path ${w} d="M28 50h46M28 50V22"/>
+    <path ${W} d="M33 26l12 8 10-6 15 14"/>
+    <path ${W} d="M62 42h8v-8"/>
+    <g ${W}>
+      <ellipse cx="100" cy="58" rx="14" ry="5"/>
+      <ellipse cx="100" cy="50" rx="14" ry="5"/>
+      <ellipse cx="100" cy="42" rx="14" ry="5"/>
+    </g>
+    <path ${w} d="M86 34v8M114 34v8M86 42v8M114 42v8"/>
+    <path ${w} d="M14 70h104"/>
+  `;
+
+  /* ── 공개 API ─────────────────────────────────────────── */
+  return {
+    icon: era => svg('0 0 40 40', IC[era] || ''),
+    hero: era => svg('0 0 128 80', HERO[era] || ''),
+    card: id => svg('0 0 128 80', CARD[id] || ''),
+    has: id => !!CARD[id],
+    ids: () => Object.keys(CARD),
+    count: () => Object.keys(CARD).length,
+    forCard: c => (CARD[c.id] ? svg('0 0 128 80', CARD[c.id]) : svg('0 0 128 80', HERO[c.era] || ''))
+  };
+})();
+
 
 /* ================= 저장 ================= */
 const SKEY = "his_note_v1";
@@ -717,6 +1425,10 @@ function eraStyle(el, era){
   el.style.setProperty("--era", e.color);
   el.style.setProperty("--era-soft", e.soft);
 }
+/* 시대 문양이 들어간 배지 */
+function badgeHTML(era, text){
+  return '<span class="bd-ic" aria-hidden="true">' + ART.icon(era) + '</span>' + esc(text);
+}
 
 /* ================= 탭 ================= */
 let currentView = "card";
@@ -746,7 +1458,7 @@ function buildEraGrid(container, onPick, activeEra){
     b.dataset.era = String(e.id);
     eraStyle(b, e.id);
     b.setAttribute("aria-pressed", String(activeEra === e.id));
-    b.innerHTML = "<b></b><i></i>";
+    b.innerHTML = '<span class="ec-wm" aria-hidden="true">' + ART.icon(e.id) + '</span><b></b><i></i>';
     b.querySelector("b").textContent = e.short;
     b.querySelector("i").textContent = n + "개";
     b.setAttribute("aria-label", e.badge + " " + n + "개");
@@ -793,8 +1505,9 @@ function renderCard(){
   card.classList.remove("flipped");
   flipped = false;
   [ $("faceFront"), $("faceBack"), $("fBadge"), $("bBadge") ].forEach(el => eraStyle(el, c.era));
-  $("fBadge").textContent = e.badge;
-  $("bBadge").textContent = e.badge;
+  $("fBadge").innerHTML = badgeHTML(c.era, e.badge);
+  $("bBadge").innerHTML = badgeHTML(c.era, e.badge);
+  $("fArt").innerHTML = ART.forCard(c);
   $("fName").textContent = c.name;
   $("fQ").textContent = c.q;
   $("bName").textContent = c.name;
@@ -969,7 +1682,7 @@ function renderQuestion(){
   $("qCount").textContent = (quiz.i + 1) + " / " + quiz.items.length;
   $("qScore").textContent = quiz.score + "점";
   eraStyle($("qBadge"), q.c.era);
-  $("qBadge").textContent = ERA_MAP[q.c.era].badge;
+  $("qBadge").innerHTML = badgeHTML(q.c.era, ERA_MAP[q.c.era].badge);
   $("qText").textContent = q.c.q;
   const box = $("qChoices"); box.innerHTML = "";
   const letters = ["①", "②", "③", "④"];
@@ -1154,9 +1867,9 @@ function renderTimeline(){
     const head = document.createElement("div");
     head.className = "tl-era";
     eraStyle(head, e.id);
-    head.innerHTML = "<b></b><span></span>";
-    head.querySelector("b").textContent = e.badge;
-    head.querySelector("span").textContent = e.range;
+    head.innerHTML = '<b><span class="tl-ic" aria-hidden="true">' + ART.icon(e.id) + '</span><span class="tl-bt"></span></b><span></span>';
+    head.querySelector(".tl-bt").textContent = e.badge;
+    head.querySelector("b + span").textContent = e.range;
     list.appendChild(head);
     list.appendChild(sec);
     items.forEach(c => {
@@ -1223,7 +1936,7 @@ function renderNote(){
     const badge = document.createElement("span");
     badge.className = "badge";
     eraStyle(badge, c.era);
-    badge.textContent = ERA_MAP[c.era].short;
+    badge.innerHTML = badgeHTML(c.era, ERA_MAP[c.era].short);
     const nm = document.createElement("strong");
     nm.textContent = c.name;
     const yr = document.createElement("span");
